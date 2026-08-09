@@ -26,6 +26,8 @@ enum RequestStatus {
 
 model User {
   id             String                                @id @default(uuid())
+  email          String                                @unique
+  password       String
   name           String
   bio            String?
   approxLocation Unsupported("geography(Point, 4326)")? @map("approx_location")

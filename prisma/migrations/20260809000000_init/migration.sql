@@ -10,6 +10,8 @@ CREATE TYPE "RequestStatus" AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED', 'COMPLET
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "bio" TEXT,
     "approx_location" geography(Point, 4326),
@@ -58,6 +60,9 @@ CREATE TABLE "reviews" (
 
     CONSTRAINT "reviews_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
 CREATE INDEX "users_approx_location_idx" ON "users" USING GIST ("approx_location");
