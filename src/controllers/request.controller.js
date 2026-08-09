@@ -58,6 +58,21 @@ export async function completeRequest(req, res, next) {
 }
 
 /**
+ * Controller for fetching a request by ID (GET /api/requests/:id).
+ * Auth required — only the requester or listing owner may view.
+ * Emails revealed only when status is ACCEPTED or COMPLETED.
+ */
+export async function getRequestById(req, res, next) {
+  try {
+    const { id } = req.params;
+    const request = await requestService.getRequestById({ requestId: id, userId: req.user.id });
+    res.status(200).json(request);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * Controller for fetching requests sent/received by the authenticated user (GET /api/requests/my).
  */
 export async function getUserRequests(req, res, next) {

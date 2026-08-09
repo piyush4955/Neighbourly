@@ -228,9 +228,51 @@ export async function getUserRequests({ userId }) {
 }
 
 /**
- * Serializes a request record for API response (sanitizes owner details).
+ * Fetches a single request by ID.
+ * Only the requester or the listing owner may view it (403 for anyone else).
+ * Email addresses (requesterEmail, ownerEmail) are included only when
+ * status is ACCEPTED or COMPLETED — not while the request is pending or declined.
  */
-function serializeRequest(request) {
+export async function getRequestById({ requestId, userId }) {
+  const request = await prisma.request.findUnique({
+    where: { id: requestId },
+    include: {
+      listing: { include: { owner: true } },
+      requester: true
+    }
+  });
+
+  if (!request) {
+    const error = new Error('Request not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const isOwner = request.listing.ownerId === userId;
+  const isRequester = request.requesterId === userId;
+
+  if (!isOwner && !isRequester) {
+    const error = new Error('Forbidden: You do not have access to this request');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return serializeRequest(request, { includeEmails: true });
+}
+
+/**
+ * Serializes a request record for API response.
+ * @param {Object} request - Prisma request record with listing and requester includes
+ * @param {{ includeEmails?: boolean }} opts - If includeEmails is true and status is
+ *   ACCEPTED or COMPLETED, requesterEmail and ownerEmail are included in the response.
+ *   This is intentionally never surfaced on PENDING or DECLINED requests so that
+ *   contact details are only exchanged once a match is confirmed.
+ */
+function serializeRequest(request, { includeEmails = false } = {}) {
+  const contactUnlocked =
+    includeEmails &&
+    (request.status === 'ACCEPTED' || request.status === 'COMPLETED');
+
   return {
     id: request.id,
     listingId: request.listingId,
@@ -238,6 +280,8 @@ function serializeRequest(request) {
     status: request.status,
     createdAt: request.createdAt,
     updatedAt: request.updatedAt,
+    ...(contactUnlocked && request.requester ? { requesterEmail: request.requester.email } : {}),
+    ...(contactUnlocked && request.listing?.owner ? { ownerEmail: request.listing.owner.email } : {}),
     listing: request.listing
       ? {
           id: request.listing.id,
