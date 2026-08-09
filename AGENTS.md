@@ -54,3 +54,13 @@ Review: id, request_id, reviewer_id, reviewee_id, rating, comment, created_at
   project, not just complex ones.
 - After each feature, tell me what you built and how to test it manually
   (curl commands or steps) before marking it done.
+
+## Project Status (as of [today's date])
+Completed and tested: auth, listings CRUD, geolocation search, request
+workflow (state machine), contact-reveal on accepted requests (email only,
+no real-time messaging — deferred to post-MVP).
+Currently working on: Step 8 — reviews/reputation.
+Deferred: real user location input (geocoding) — planned for right before
+frontend work (Step 10), not yet started. Users currently have
+approxLocation: null.
+Not started: privacy audit pass, frontend.
