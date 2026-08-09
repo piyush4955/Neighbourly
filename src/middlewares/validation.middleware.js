@@ -1,5 +1,5 @@
 /**
- * Input validation middlewares for authentication routes.
+ * Input validation middlewares for authentication and listing routes.
  * Enforces AGENTS.md Rule 4 (input validation & basic error handling).
  */
 
@@ -41,6 +41,48 @@ export function validateLogin(req, res, next) {
 
   if (!password || typeof password !== 'string' || password.length === 0) {
     return res.status(400).json({ error: { message: 'Password is required' } });
+  }
+
+  next();
+}
+
+/**
+ * Validates request payload for POST /api/listings
+ */
+export function validateCreateListing(req, res, next) {
+  const { title, description, category } = req.body || {};
+
+  if (!title || typeof title !== 'string' || title.trim().length === 0) {
+    return res.status(400).json({ error: { message: 'Title is required and must be a non-empty string' } });
+  }
+
+  if (!description || typeof description !== 'string' || description.trim().length === 0) {
+    return res.status(400).json({ error: { message: 'Description is required and must be a non-empty string' } });
+  }
+
+  if (!category || typeof category !== 'string' || category.trim().length === 0) {
+    return res.status(400).json({ error: { message: 'Category is required and must be a non-empty string' } });
+  }
+
+  next();
+}
+
+/**
+ * Validates request payload for PATCH /api/listings/:id
+ */
+export function validateUpdateListing(req, res, next) {
+  const { title, description, category } = req.body || {};
+
+  if (title !== undefined && (typeof title !== 'string' || title.trim().length === 0)) {
+    return res.status(400).json({ error: { message: 'Title must be a non-empty string if provided' } });
+  }
+
+  if (description !== undefined && (typeof description !== 'string' || description.trim().length === 0)) {
+    return res.status(400).json({ error: { message: 'Description must be a non-empty string if provided' } });
+  }
+
+  if (category !== undefined && (typeof category !== 'string' || category.trim().length === 0)) {
+    return res.status(400).json({ error: { message: 'Category must be a non-empty string if provided' } });
   }
 
   next();
